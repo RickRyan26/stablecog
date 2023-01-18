@@ -18,6 +18,7 @@ export const load: LayoutServerLoad = async (event) => {
 				plan = data.subscription_tier;
 			} else {
 				let { data } = await supabaseClient.auth.refreshSession(session);
+				console.warn('%c data.session', 'font-weight:bold', data.session);
 				if (data && data.session) {
 					session = data.session;
 					const { data: userData } = await supabaseClient
