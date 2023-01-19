@@ -27,7 +27,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		return new Response(JSON.stringify({ error }));
 	}
 	if (!data || !data.id) {
-		return new Response(JSON.stringify({ error: 'No user found' }));
+		return new Response(JSON.stringify({ error: 'No Create Stripe user found' }));
 	}
 	if (data.stripe_customer_id) {
 		return new Response(JSON.stringify({ error: 'User already has a Stripe customer id' }));

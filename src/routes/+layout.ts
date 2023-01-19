@@ -28,7 +28,7 @@ export const load: LayoutLoad = async (event) => {
 						.maybeSingle();
 					if (userData && userData.subscription_tier) {
 						plan = userData.subscription_tier;
-					} else throw Error('No user found');
+					} else throw Error('No Subscription Client user found');
 				} else throw Error('No session found');
 			}
 		} catch (error) {

@@ -19,7 +19,7 @@ export const GET: RequestHandler = async (event) => {
 		.eq('id', session.user.id)
 		.maybeSingle();
 	if (userError || !userData) {
-		return new Response(JSON.stringify({ error: userError || 'No user found' }));
+		return new Response(JSON.stringify({ error: userError || 'No Stripe user found' }));
 	}
 	const customer = await stripe.customers.retrieve(userData.stripe_customer_id);
 	const countryCode = event.request.headers.get('x-vercel-ip-country');
