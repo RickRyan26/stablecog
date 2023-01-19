@@ -4,9 +4,3 @@ ports:
     visibility: public
     name: Rick Ai
     description: Ricks Ai Lab
-
-tasks:
-  - init: npm install && npm run build
-    command: npm run start
-
-
