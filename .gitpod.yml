@@ -1,6 +1,12 @@
+# https://app.supabase.com/project/onelikfckcjoipjwetxo/auth/url-configuration
+
 ports:
   - port: 5173
     onOpen: open-browser
     visibility: public
     name: Rick Ai
     description: Ricks Ai Lab
+
+tasks:
+  - init: npm install && npm run build
+    command: npm run start now
