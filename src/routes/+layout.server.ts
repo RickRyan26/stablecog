@@ -26,6 +26,7 @@ export const load: LayoutServerLoad = async (event) => {
 						.select('subscription_tier')
 						.eq('id', session.user.id)
 						.maybeSingle();
+					console.warn('%c userData', 'font-weight:bold', userData);
 					if (userData && userData.subscription_tier) {
 						plan = userData.subscription_tier;
 					} else throw Error('No Subscription Server user found');
