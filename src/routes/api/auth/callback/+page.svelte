@@ -17,6 +17,13 @@
 	async function redirect() {
 		if (!browser) return;
 		if (!$page.data.session?.user.id || !$page.data.session.user.email) return;
+
+		console.warn(
+			'%c $page.data.session.user.email',
+			'font-weight:bold',
+			$page.data.session.user.email
+		);
+
 		mLogSignIn({
 			'SC - Page': `${$page.url.pathname}${$page.url.search}`,
 			'SC - Plan': $page.data.plan,
@@ -40,6 +47,7 @@
 	let mounted = false;
 	onMount(() => {
 		mounted = true;
+		console.warn('%c $page.data.session?.user.id', 'font-weight:bold', $page.data.session?.user.id);
 	});
 </script>
 
