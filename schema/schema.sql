@@ -9,8 +9,8 @@ CREATE TYPE user_subscription_category_enum AS ENUM ('GIFTED', 'FRIEND_BOUGHT');
 CREATE TABLE "prompt" (
     "text" TEXT NOT NULL UNIQUE,
     "id" UUID NOT NULL DEFAULT uuid_generate_v4(),
-    "created_at" TIMESTAMPTZ DEFAULT TIMEZONE(' utc ' :: TEXT, NOW()) NOT NULL,
-    "updated_at" TIMESTAMPTZ DEFAULT TIMEZONE(' utc ' :: TEXT, NOW()) NOT NULL,
+    "created_at" TIMESTAMPTZ DEFAULT TIMEZONE('utc' :: TEXT, NOW()) NOT NULL,
+    "updated_at" TIMESTAMPTZ DEFAULT TIMEZONE('utc' :: TEXT, NOW()) NOT NULL,
     PRIMARY KEY(id)
 );
 
@@ -24,8 +24,8 @@ ALTER TABLE
 CREATE TABLE "negative_prompt" (
     "text" TEXT NOT NULL UNIQUE,
     "id" UUID NOT NULL DEFAULT uuid_generate_v4(),
-    "created_at" TIMESTAMPTZ DEFAULT TIMEZONE(' utc ' :: TEXT, NOW()) NOT NULL,
-    "updated_at" TIMESTAMPTZ DEFAULT TIMEZONE(' utc ' :: TEXT, NOW()) NOT NULL,
+    "created_at" TIMESTAMPTZ DEFAULT TIMEZONE('utc' :: TEXT, NOW()) NOT NULL,
+    "updated_at" TIMESTAMPTZ DEFAULT TIMEZONE('utc' :: TEXT, NOW()) NOT NULL,
     PRIMARY KEY(id)
 );
 
@@ -39,8 +39,8 @@ ALTER TABLE
 CREATE TABLE "model" (
     "name" TEXT NOT NULL UNIQUE,
     "id" UUID NOT NULL DEFAULT uuid_generate_v4(),
-    "created_at" TIMESTAMPTZ DEFAULT TIMEZONE(' utc ' :: TEXT, NOW()) NOT NULL,
-    "updated_at" TIMESTAMPTZ DEFAULT TIMEZONE(' utc ' :: TEXT, NOW()) NOT NULL,
+    "created_at" TIMESTAMPTZ DEFAULT TIMEZONE('utc' :: TEXT, NOW()) NOT NULL,
+    "updated_at" TIMESTAMPTZ DEFAULT TIMEZONE('utc' :: TEXT, NOW()) NOT NULL,
     PRIMARY KEY(id)
 );
 
@@ -54,8 +54,8 @@ ALTER TABLE
 CREATE TABLE "scheduler" (
     "name" TEXT NOT NULL UNIQUE,
     "id" UUID NOT NULL DEFAULT uuid_generate_v4(),
-    "created_at" TIMESTAMPTZ DEFAULT TIMEZONE(' utc ' :: TEXT, NOW()) NOT NULL,
-    "updated_at" TIMESTAMPTZ DEFAULT TIMEZONE(' utc ' :: TEXT, NOW()) NOT NULL,
+    "created_at" TIMESTAMPTZ DEFAULT TIMEZONE('utc' :: TEXT, NOW()) NOT NULL,
+    "updated_at" TIMESTAMPTZ DEFAULT TIMEZONE('utc' :: TEXT, NOW()) NOT NULL,
     PRIMARY KEY(id)
 );
 
@@ -92,8 +92,8 @@ CREATE TABLE "generation" (
     "user_tier" user_subscription_tier_enum NOT NULL DEFAULT 'FREE',
     "image_object_name" TEXT,
     "image_object_names" JSONB,
-    "created_at" TIMESTAMPTZ DEFAULT TIMEZONE(' utc ' :: TEXT, NOW()) NOT NULL,
-    "updated_at" TIMESTAMPTZ DEFAULT TIMEZONE(' utc ' :: TEXT, NOW()) NOT NULL,
+    "created_at" TIMESTAMPTZ DEFAULT TIMEZONE('utc' :: TEXT, NOW()) NOT NULL,
+    "updated_at" TIMESTAMPTZ DEFAULT TIMEZONE('utc' :: TEXT, NOW()) NOT NULL,
     PRIMARY KEY(id)
 );
 
@@ -129,8 +129,8 @@ CREATE TABLE "upscale" (
     "id" UUID NOT NULL DEFAULT uuid_generate_v4(),
     "user_id" UUID REFERENCES auth.users(id),
     "user_tier" user_subscription_tier_enum NOT NULL DEFAULT 'FREE',
-    "created_at" TIMESTAMPTZ DEFAULT TIMEZONE(' utc ' :: TEXT, NOW()) NOT NULL,
-    "updated_at" TIMESTAMPTZ DEFAULT TIMEZONE(' utc ' :: TEXT, NOW()) NOT NULL,
+    "created_at" TIMESTAMPTZ DEFAULT TIMEZONE('utc' :: TEXT, NOW()) NOT NULL,
+    "updated_at" TIMESTAMPTZ DEFAULT TIMEZONE('utc' :: TEXT, NOW()) NOT NULL,
     PRIMARY KEY(id)
 );
 
@@ -146,11 +146,11 @@ CREATE TABLE "server" (
     "url" TEXT NOT NULL,
     "healthy" BOOLEAN NOT NULL DEFAULT TRUE,
     "enabled" BOOLEAN NOT NULL DEFAULT TRUE,
-    "last_health_check_at" TIMESTAMPTZ DEFAULT TIMEZONE(' utc ' :: TEXT, NOW()) NOT NULL,
+    "last_health_check_at" TIMESTAMPTZ DEFAULT TIMEZONE('utc' :: TEXT, NOW()) NOT NULL,
     "features" JSONB,
     "id" UUID NOT NULL DEFAULT uuid_generate_v4(),
-    "created_at" TIMESTAMPTZ DEFAULT TIMEZONE(' utc ' :: TEXT, NOW()) NOT NULL,
-    "updated_at" TIMESTAMPTZ DEFAULT TIMEZONE(' utc ' :: TEXT, NOW()) NOT NULL,
+    "created_at" TIMESTAMPTZ DEFAULT TIMEZONE('utc' :: TEXT, NOW()) NOT NULL,
+    "updated_at" TIMESTAMPTZ DEFAULT TIMEZONE('utc' :: TEXT, NOW()) NOT NULL,
     PRIMARY KEY(id)
 );
 
@@ -243,8 +243,8 @@ CREATE TABLE "generation_realtime" (
     "num_inference_steps" INTEGER,
     "id" UUID NOT NULL DEFAULT uuid_generate_v4(),
     "user_tier" user_subscription_tier_enum NOT NULL DEFAULT 'FREE',
-    "created_at" TIMESTAMPTZ DEFAULT TIMEZONE(' utc ' :: TEXT, NOW()) NOT NULL,
-    "updated_at" TIMESTAMPTZ DEFAULT TIMEZONE(' utc ' :: TEXT, NOW()) NOT NULL,
+    "created_at" TIMESTAMPTZ DEFAULT TIMEZONE('utc' :: TEXT, NOW()) NOT NULL,
+    "updated_at" TIMESTAMPTZ DEFAULT TIMEZONE('utc' :: TEXT, NOW()) NOT NULL,
     PRIMARY KEY(id)
 );
 
@@ -510,7 +510,7 @@ OR REPLACE FUNCTION prune_upscale_realtime() RETURNS trigger AS $wat$ BEGIN
 DELETE FROM
     upscale_realtime
 WHERE
-    created_at < TIMEZONE(' utc ' :: TEXT, NOW()) - INTERVAL ' 2 hours ';
+    created_at < TIMEZONE('utc' :: TEXT, NOW()) - INTERVAL ' 2 hours ';
 
 RETURN NULL;
 
@@ -528,8 +528,8 @@ UPDATE
 -- Admin Table
 CREATE TABLE "admin" (
     "id" UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
-    "created_at" TIMESTAMPTZ DEFAULT TIMEZONE(' utc ' :: TEXT, NOW()) NOT NULL,
-    "updated_at" TIMESTAMPTZ DEFAULT TIMEZONE(' utc ' :: TEXT, NOW()) NOT NULL,
+    "created_at" TIMESTAMPTZ DEFAULT TIMEZONE('utc' :: TEXT, NOW()) NOT NULL,
+    "updated_at" TIMESTAMPTZ DEFAULT TIMEZONE('utc' :: TEXT, NOW()) NOT NULL,
     PRIMARY KEY(id)
 );
 
@@ -548,8 +548,8 @@ CREATE TABLE "generation_g" (
     "id" UUID NOT NULL DEFAULT uuid_generate_v4(),
     "user_id" UUID REFERENCES auth.users(id),
     "user_tier" user_subscription_tier_enum NOT NULL DEFAULT 'FREE',
-    "created_at" TIMESTAMPTZ DEFAULT TIMEZONE(' utc ' :: TEXT, NOW()) NOT NULL,
-    "updated_at" TIMESTAMPTZ DEFAULT TIMEZONE(' utc ' :: TEXT, NOW()) NOT NULL,
+    "created_at" TIMESTAMPTZ DEFAULT TIMEZONE('utc' :: TEXT, NOW()) NOT NULL,
+    "updated_at" TIMESTAMPTZ DEFAULT TIMEZONE('utc' :: TEXT, NOW()) NOT NULL,
     PRIMARY KEY(id)
 );
 
@@ -583,9 +583,9 @@ CREATE TABLE public."user" (
     "email" TEXT NOT NULL,
     "subscription_tier" user_subscription_tier_enum DEFAULT 'FREE' NOT NULL,
     "subscription_category" user_subscription_category_enum,
-    "created_at" TIMESTAMPTZ DEFAULT TIMEZONE(' utc ' :: TEXT, NOW()) NOT NULL,
-    "updated_at" TIMESTAMPTZ DEFAULT TIMEZONE(' utc ' :: TEXT, NOW()) NOT NULL,
-    "confirmed_at" TIMESTAMPTZ DEFAULT TIMEZONE(' utc ' :: TEXT, NOW()) NOT NULL,
+    "created_at" TIMESTAMPTZ DEFAULT TIMEZONE('utc' :: TEXT, NOW()) NOT NULL,
+    "updated_at" TIMESTAMPTZ DEFAULT TIMEZONE('utc' :: TEXT, NOW()) NOT NULL,
+    "confirmed_at" TIMESTAMPTZ DEFAULT TIMEZONE('utc' :: TEXT, NOW()) NOT NULL,
     "stripe_customer_id" TEXT,
     PRIMARY KEY(id)
 );
