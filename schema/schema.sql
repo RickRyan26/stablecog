@@ -5,43 +5,6 @@ CREATE TYPE user_subscription_tier_enum AS ENUM ('FREE', 'PRO');
 CREATE TYPE user_subscription_category_enum AS ENUM ('GIFTED', 'FRIEND_BOUGHT');
 
 -- Generation Table
-CREATE TYPE generation_status_enum AS ENUM ('started', 'succeeded', 'failed', 'rejected');
-
-CREATE TABLE "generation" (
-    "prompt_id" UUID REFERENCES prompt(id),
-    "negative_prompt_id" UUID REFERENCES negative_prompt(id),
-    "model_id" UUID REFERENCES model(id) NOT NULL,
-    "scheduler_id" UUID REFERENCES scheduler(id) NOT NULL,
-    "width" INTEGER NOT NULL,
-    "height" INTEGER NOT NULL,
-    "seed" BIGINT NOT NULL,
-    "num_inference_steps" INTEGER NOT NULL,
-    "guidance_scale" DOUBLE PRECISION NOT NULL,
-    "server_url" TEXT NOT NULL,
-    "duration_ms" INTEGER,
-    "status" generation_status_enum NOT NULL,
-    "failure_reason" TEXT,
-    "country_code" TEXT,
-    "device_type" TEXT,
-    "device_os" TEXT,
-    "device_browser" TEXT,
-    "user_agent" TEXT,
-    "id" UUID NOT NULL DEFAULT uuid_generate_v4(),
-    "user_id" UUID REFERENCES auth.users(id),
-    "user_tier" user_tier_enum NOT NULL DEFAULT 'FREE',
-    "image_object_name" TEXT,
-    "image_object_names" JSONB,
-    "created_at" TIMESTAMPTZ DEFAULT TIMEZONE(' utc ' :: TEXT, NOW()) NOT NULL,
-    "updated_at" TIMESTAMPTZ DEFAULT TIMEZONE(' utc ' :: TEXT, NOW()) NOT NULL,
-    PRIMARY KEY(id)
-);
-
-CREATE trigger handle_updated_at before
-UPDATE
-    ON generation FOR each ROW EXECUTE PROCEDURE moddatetime (updated_at);
-
-ALTER TABLE
-    generation ENABLE ROW LEVEL SECURITY;
 
 CREATE TABLE "prompt" (
     "text" TEXT NOT NULL UNIQUE,
@@ -103,6 +66,45 @@ UPDATE
 ALTER TABLE
     scheduler ENABLE ROW LEVEL SECURITY;
 
+CREATE TYPE generation_status_enum AS ENUM ('started', 'succeeded', 'failed', 'rejected');
+
+CREATE TABLE "generation" (
+    "prompt_id" UUID REFERENCES prompt(id),
+    "negative_prompt_id" UUID REFERENCES negative_prompt(id),
+    "model_id" UUID REFERENCES model(id) NOT NULL,
+    "scheduler_id" UUID REFERENCES scheduler(id) NOT NULL,
+    "width" INTEGER NOT NULL,
+    "height" INTEGER NOT NULL,
+    "seed" BIGINT NOT NULL,
+    "num_inference_steps" INTEGER NOT NULL,
+    "guidance_scale" DOUBLE PRECISION NOT NULL,
+    "server_url" TEXT NOT NULL,
+    "duration_ms" INTEGER,
+    "status" generation_status_enum NOT NULL,
+    "failure_reason" TEXT,
+    "country_code" TEXT,
+    "device_type" TEXT,
+    "device_os" TEXT,
+    "device_browser" TEXT,
+    "user_agent" TEXT,
+    "id" UUID NOT NULL DEFAULT uuid_generate_v4(),
+    "user_id" UUID REFERENCES auth.users(id),
+    "user_tier" user_subscription_tier_enum NOT NULL DEFAULT 'FREE',
+    "image_object_name" TEXT,
+    "image_object_names" JSONB,
+    "created_at" TIMESTAMPTZ DEFAULT TIMEZONE(' utc ' :: TEXT, NOW()) NOT NULL,
+    "updated_at" TIMESTAMPTZ DEFAULT TIMEZONE(' utc ' :: TEXT, NOW()) NOT NULL,
+    PRIMARY KEY(id)
+);
+
+CREATE trigger handle_updated_at before
+UPDATE
+    ON generation FOR each ROW EXECUTE PROCEDURE moddatetime (updated_at);
+
+ALTER TABLE
+    generation ENABLE ROW LEVEL SECURITY;
+
+
 -- Upscale Table
 CREATE TYPE upscale_status_enum AS ENUM (' started ', ' succeeded ', ' failed ');
 
@@ -126,7 +128,7 @@ CREATE TABLE "upscale" (
     "user_agent" TEXT,
     "id" UUID NOT NULL DEFAULT uuid_generate_v4(),
     "user_id" UUID REFERENCES auth.users(id),
-    "user_tier" user_tier_enum NOT NULL DEFAULT 'FREE',
+    "user_tier" user_subscription_tier_enum NOT NULL DEFAULT 'FREE',
     "created_at" TIMESTAMPTZ DEFAULT TIMEZONE(' utc ' :: TEXT, NOW()) NOT NULL,
     "updated_at" TIMESTAMPTZ DEFAULT TIMEZONE(' utc ' :: TEXT, NOW()) NOT NULL,
     PRIMARY KEY(id)
@@ -173,17 +175,17 @@ FROM
     generation;
 
 CREATE
-OR REPLACE FUNCTION generation_count() RETURNS BIGINT AS $ $
+OR REPLACE FUNCTION generation_count() RETURNS BIGINT AS $wat$
 SELECT
     COUNT(*)
 FROM
     generation_public
 WHERE
-    status = ' succeeded '
-    OR status IS NULL $ $ language SQL;
+    status = 'succeeded'
+    OR status IS NULL $wat$ language SQL;
 
 CREATE
-OR REPLACE FUNCTION generation_count_with_null_duration_ms() RETURNS BIGINT AS $ $
+OR REPLACE FUNCTION generation_count_with_null_duration_ms() RETURNS BIGINT AS $wat$
 SELECT
     COUNT(*)
 FROM
@@ -193,10 +195,10 @@ WHERE
     AND (
         status IS NULL
         OR status = 'succeeded'
-    ) $ $ language SQL;
+    ) $wat$ language SQL;
 
 CREATE
-OR REPLACE FUNCTION generation_with_non_null_duration_ms_total() RETURNS BIGINT AS $ $
+OR REPLACE FUNCTION generation_with_non_null_duration_ms_total() RETURNS BIGINT AS $wat$
 SELECT
     SUM (duration_ms) generation_with_non_null_duration_ms_total
 FROM
@@ -206,10 +208,10 @@ WHERE
     AND (
         status IS NULL
         or status = 'succeeded'
-    ) $ $ language SQL;
+    ) $wat$ language SQL;
 
 CREATE
-OR REPLACE FUNCTION generation_with_non_null_duration_ms_average() RETURNS BIGINT AS $ $
+OR REPLACE FUNCTION generation_with_non_null_duration_ms_average() RETURNS BIGINT AS $wat$
 SELECT
     SUM (duration_ms) / COUNT(' * ') AS generation_with_non_null_duration_ms_average
 FROM
@@ -219,17 +221,17 @@ WHERE
     AND (
         status IS NULL
         or status = 'succeeded'
-    ) $ $ language SQL;
+    ) $wat$ language SQL;
 
 CREATE
-OR REPLACE FUNCTION generation_duration_ms_total_estimate() RETURNS BIGINT AS $ $
+OR REPLACE FUNCTION generation_duration_ms_total_estimate() RETURNS BIGINT AS $wat$
 SELECT
-    generation_with_non_null_duration_ms_total() + generation_count_with_null_duration_ms() * generation_with_non_null_duration_ms_average() $ $ language SQL;
+    generation_with_non_null_duration_ms_total() + generation_count_with_null_duration_ms() * generation_with_non_null_duration_ms_average() $wat$ language SQL;
 
 CREATE
-OR REPLACE FUNCTION generation_duration_ms_total_estimate_with_constant() RETURNS BIGINT AS $ $
+OR REPLACE FUNCTION generation_duration_ms_total_estimate_with_constant() RETURNS BIGINT AS $wat$
 SELECT
-    generation_with_non_null_duration_ms_total() + generation_count_with_null_duration_ms() * 12000 $ $ language SQL;
+    generation_with_non_null_duration_ms_total() + generation_count_with_null_duration_ms() * 12000 $wat$ language SQL;
 
 CREATE TABLE "generation_realtime" (
     "status" generation_status_enum NOT NULL,
@@ -240,7 +242,7 @@ CREATE TABLE "generation_realtime" (
     "height" INTEGER,
     "num_inference_steps" INTEGER,
     "id" UUID NOT NULL DEFAULT uuid_generate_v4(),
-    "user_tier" user_tier_enum NOT NULL DEFAULT 'FREE',
+    "user_tier" user_subscription_tier_enum NOT NULL DEFAULT 'FREE',
     "created_at" TIMESTAMPTZ DEFAULT TIMEZONE(' utc ' :: TEXT, NOW()) NOT NULL,
     "updated_at" TIMESTAMPTZ DEFAULT TIMEZONE(' utc ' :: TEXT, NOW()) NOT NULL,
     PRIMARY KEY(id)
@@ -254,7 +256,7 @@ SELECT
     USING (TRUE);
 
 CREATE
-OR REPLACE FUNCTION duplicate_to_generation_realtime() RETURNS trigger AS $ $ BEGIN IF EXISTS(
+OR REPLACE FUNCTION duplicate_to_generation_realtime() RETURNS trigger AS $wat$ BEGIN IF EXISTS(
     SELECT
         id
     FROM
@@ -312,7 +314,7 @@ RETURN new;
 
 END;
 
-$ $ language plpgsql SECURITY DEFINER;
+$wat$ language plpgsql SECURITY DEFINER;
 
 CREATE trigger generation_created_or_updated
 AFTER
@@ -322,7 +324,7 @@ UPDATE
     ON generation FOR EACH ROW EXECUTE PROCEDURE duplicate_to_generation_realtime();
 
 CREATE
-OR REPLACE FUNCTION prune_generation_realtime() RETURNS trigger AS $ $ BEGIN
+OR REPLACE FUNCTION prune_generation_realtime() RETURNS trigger AS $wat$ BEGIN
 DELETE FROM
     generation_realtime
 WHERE
@@ -332,7 +334,7 @@ RETURN NULL;
 
 END;
 
-$ $ language plpgsql SECURITY DEFINER;
+$wat$ language plpgsql SECURITY DEFINER;
 
 CREATE trigger generation_created_or_updated_prune
 AFTER
@@ -355,17 +357,17 @@ FROM
     upscale;
 
 CREATE
-OR REPLACE FUNCTION upscale_count() RETURNS BIGINT AS $ $
+OR REPLACE FUNCTION upscale_count() RETURNS BIGINT AS $wat$
 SELECT
     COUNT(*)
 FROM
     upscale_public
 WHERE
     status = ' succeeded '
-    OR status IS NULL $ $ language SQL;
+    OR status IS NULL $wat$ language SQL;
 
 CREATE
-OR REPLACE FUNCTION upscale_count_with_null_duration_ms() RETURNS BIGINT AS $ $
+OR REPLACE FUNCTION upscale_count_with_null_duration_ms() RETURNS BIGINT AS $wat$
 SELECT
     COUNT(*)
 FROM
@@ -375,10 +377,10 @@ WHERE
     AND (
         status IS NULL
         OR status = ' succeeded '
-    ) $ $ language SQL;
+    ) $wat$ language SQL;
 
 CREATE
-OR REPLACE FUNCTION upscale_with_non_null_duration_ms_total() RETURNS BIGINT AS $ $
+OR REPLACE FUNCTION upscale_with_non_null_duration_ms_total() RETURNS BIGINT AS $wat$
 SELECT
     SUM (duration_ms) upscale_with_non_null_duration_ms_total
 FROM
@@ -388,10 +390,10 @@ WHERE
     AND (
         status IS NULL
         or status = ' succeeded '
-    ) $ $ language SQL;
+    ) $wat$ language SQL;
 
 CREATE
-OR REPLACE FUNCTION upscale_with_non_null_duration_ms_average() RETURNS BIGINT AS $ $
+OR REPLACE FUNCTION upscale_with_non_null_duration_ms_average() RETURNS BIGINT AS $wat$
 SELECT
     SUM (duration_ms) / COUNT(' * ') AS upscale_with_non_null_duration_ms_average
 FROM
@@ -401,17 +403,17 @@ WHERE
     AND (
         status IS NULL
         or status = ' succeeded '
-    ) $ $ language SQL;
+    ) $wat$ language SQL;
 
 CREATE
-OR REPLACE FUNCTION upscale_duration_ms_total_estimate() RETURNS BIGINT AS $ $
+OR REPLACE FUNCTION upscale_duration_ms_total_estimate() RETURNS BIGINT AS $wat$
 SELECT
-    upscale_with_non_null_duration_ms_total() + upscale_count_with_null_duration_ms() * upscale_with_non_null_duration_ms_average() $ $ language SQL;
+    upscale_with_non_null_duration_ms_total() + upscale_count_with_null_duration_ms() * upscale_with_non_null_duration_ms_average() $wat$ language SQL;
 
 CREATE
-OR REPLACE FUNCTION upscale_duration_ms_total_estimate_with_constant() RETURNS BIGINT AS $ $
+OR REPLACE FUNCTION upscale_duration_ms_total_estimate_with_constant() RETURNS BIGINT AS $wat$
 SELECT
-    upscale_with_non_null_duration_ms_total() + upscale_count_with_null_duration_ms() * 12000 $ $ language SQL;
+    upscale_with_non_null_duration_ms_total() + upscale_count_with_null_duration_ms() * 12000 $wat$ language SQL;
 
 CREATE TABLE "upscale_realtime" (
     "status" upscale_status_enum NOT NULL,
@@ -422,7 +424,7 @@ CREATE TABLE "upscale_realtime" (
     "height" INTEGER,
     "scale" INTEGER,
     "id" UUID NOT NULL DEFAULT uuid_generate_v4(),
-    "user_tier" user_tier_enum NOT NULL DEFAULT 'FREE',
+    "user_tier" user_subscription_tier_enum NOT NULL DEFAULT 'FREE',
     "created_at" TIMESTAMPTZ DEFAULT TIMEZONE('utc' :: TEXT, NOW()) NOT NULL,
     "updated_at" TIMESTAMPTZ DEFAULT TIMEZONE('utc' :: TEXT, NOW()) NOT NULL,
     PRIMARY KEY(id)
@@ -436,7 +438,7 @@ SELECT
     USING (TRUE);
 
 CREATE
-OR REPLACE FUNCTION duplicate_to_upscale_realtime() RETURNS trigger AS $ $ BEGIN IF EXISTS(
+OR REPLACE FUNCTION duplicate_to_upscale_realtime() RETURNS trigger AS $wat$ BEGIN IF EXISTS(
     SELECT
         id
     FROM
@@ -494,7 +496,7 @@ RETURN new;
 
 END;
 
-$ $ language plpgsql SECURITY DEFINER;
+$wat$ language plpgsql SECURITY DEFINER;
 
 CREATE trigger upscale_created_or_updated
 AFTER
@@ -504,7 +506,7 @@ UPDATE
     ON upscale FOR EACH ROW EXECUTE PROCEDURE duplicate_to_upscale_realtime();
 
 CREATE
-OR REPLACE FUNCTION prune_upscale_realtime() RETURNS trigger AS $ $ BEGIN
+OR REPLACE FUNCTION prune_upscale_realtime() RETURNS trigger AS $wat$ BEGIN
 DELETE FROM
     upscale_realtime
 WHERE
@@ -514,7 +516,7 @@ RETURN NULL;
 
 END;
 
-$ $ language plpgsql SECURITY DEFINER;
+$wat$ language plpgsql SECURITY DEFINER;
 
 CREATE trigger upscale_created_or_updated_prune
 AFTER
@@ -525,42 +527,11 @@ UPDATE
 
 -- Admin Table
 CREATE TABLE "admin" (
-    "id" UUID REFERENCES auth.users(id) NOT NULL ON DELETE CASCADE,
+    "id" UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
     "created_at" TIMESTAMPTZ DEFAULT TIMEZONE(' utc ' :: TEXT, NOW()) NOT NULL,
     "updated_at" TIMESTAMPTZ DEFAULT TIMEZONE(' utc ' :: TEXT, NOW()) NOT NULL,
     PRIMARY KEY(id)
 );
-
-CREATE POLICY "Everyone can see admins" ON public.admin FOR
-SELECT
-    USING (TRUE);
-
-CREATE trigger handle_updated_at before
-UPDATE
-    ON admin FOR each ROW EXECUTE PROCEDURE moddatetime (updated_at);
-
-ALTER TABLE
-    admin ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Admins can edit servers" ON public.server FOR ALL USING (
-    auth.uid() IN (
-        SELECT
-            id
-        FROM
-            admin
-    )
-);
-
-CREATE POLICY "Admins can select users" ON public.user FOR
-SELECT
-    USING (
-        auth.uid() IN (
-            SELECT
-                id
-            FROM
-                admin
-        )
-    );
 
 CREATE TABLE "generation_g" (
     "prompt_id" UUID REFERENCES prompt(id) NOT NULL,
@@ -576,7 +547,7 @@ CREATE TABLE "generation_g" (
     "hidden" BOOLEAN NOT NULL DEFAULT FALSE,
     "id" UUID NOT NULL DEFAULT uuid_generate_v4(),
     "user_id" UUID REFERENCES auth.users(id),
-    "user_tier" user_tier_enum NOT NULL DEFAULT ' FREE ',
+    "user_tier" user_subscription_tier_enum NOT NULL DEFAULT 'FREE',
     "created_at" TIMESTAMPTZ DEFAULT TIMEZONE(' utc ' :: TEXT, NOW()) NOT NULL,
     "updated_at" TIMESTAMPTZ DEFAULT TIMEZONE(' utc ' :: TEXT, NOW()) NOT NULL,
     PRIMARY KEY(id)
@@ -611,7 +582,7 @@ CREATE TABLE public."user" (
     "id" UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
     "email" TEXT NOT NULL,
     "subscription_tier" user_subscription_tier_enum DEFAULT 'FREE' NOT NULL,
-    "subscription_category" user_subscription_cateogry_enum,
+    "subscription_category" user_subscription_category_enum,
     "created_at" TIMESTAMPTZ DEFAULT TIMEZONE(' utc ' :: TEXT, NOW()) NOT NULL,
     "updated_at" TIMESTAMPTZ DEFAULT TIMEZONE(' utc ' :: TEXT, NOW()) NOT NULL,
     "confirmed_at" TIMESTAMPTZ DEFAULT TIMEZONE(' utc ' :: TEXT, NOW()) NOT NULL,
@@ -630,7 +601,7 @@ CREATE POLICY "Users can select their own entry" ON public.user FOR
 SELECT
     USING (auth.uid() = id);
 
-create function handle_new_user() returns trigger as $ $ begin
+create function handle_new_user() returns trigger as $wat$ begin
 insert into
     public.user (id, email)
 values
@@ -640,7 +611,40 @@ return new;
 
 end;
 
-$ $ language plpgsql security definer;
+$wat$ language plpgsql security definer;
+
+
+CREATE POLICY "Everyone can see admins" ON public.admin FOR
+SELECT
+    USING (TRUE);
+
+CREATE trigger handle_updated_at before
+UPDATE
+    ON admin FOR each ROW EXECUTE PROCEDURE moddatetime (updated_at);
+
+ALTER TABLE
+    admin ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Admins can edit servers" ON public.server FOR ALL USING (
+    auth.uid() IN (
+        SELECT
+            id
+        FROM
+            admin
+    )
+);
+
+CREATE POLICY "Admins can select users" ON public.user FOR
+SELECT
+    USING (
+        auth.uid() IN (
+            SELECT
+                id
+            FROM
+                admin
+        )
+    );
+
 
 -- Trigger the function every time a user is created
 create trigger on_auth_user_created
@@ -648,7 +652,7 @@ after
 insert
     on auth.users for each row execute procedure handle_new_user();
 
-create function handle_updated_user() returns trigger as $ $ begin
+create function handle_updated_user() returns trigger as $wat$ begin
 update
     public.user
 set
@@ -661,7 +665,7 @@ return new;
 
 end;
 
-$ $ language plpgsql security definer;
+$wat$ language plpgsql security definer;
 
 create trigger on_auth_user_updated
 after

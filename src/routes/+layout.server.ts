@@ -8,14 +8,12 @@ export const load: LayoutServerLoad = async (event) => {
 	let session = await getServerSession(event);
 	const { supabaseClient } = await getSupabase(event);
 	if (session?.user.id) {
-		console.warn('%c session?.user.id', 'font-weight:bold', session?.user.id);
 		try {
 			const { data } = await supabaseClient
 				.from('user')
 				.select('subscription_tier')
 				.eq('id', session.user.id)
 				.maybeSingle();
-			console.warn('%c data', 'font-weight:bold', data);
 			if (data && data.subscription_tier) {
 				plan = data.subscription_tier;
 			} else {
@@ -29,7 +27,7 @@ export const load: LayoutServerLoad = async (event) => {
 						.maybeSingle();
 					if (userData && userData.subscription_tier) {
 						plan = userData.subscription_tier;
-					} else throw Error('No Subscription Server user found');
+					} else throw Error('No user found');
 				} else throw Error('No session found');
 			}
 		} catch (error) {
